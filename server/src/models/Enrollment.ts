@@ -5,16 +5,16 @@ export class Enrollment {
   private student: Student;
   private evaluations: Evaluation[];
   // Média do estudante antes da prova final
-  private media: number;
+  private mediaPreFinal: number;
   // Média do estudante depois da final
-  private mediaFinal: number;
+  private mediaPosFinal: number;
   private reprovadoPorFalta: Boolean;
 
-  constructor(student: Student, evaluations: Evaluation[] = [], media: number = 0, mediaFinal: number = 0, reprovadoPorFalta: Boolean = false) {
+  constructor(student: Student, evaluations: Evaluation[] = [], mediaPreFinal: number = 0, mediaPosFinal: number = 0, reprovadoPorFalta: Boolean = false) {
     this.student = student;
     this.evaluations = evaluations;
-    this.media = media;
-    this.mediaFinal = mediaFinal;
+    this.mediaPreFinal = mediaPreFinal;
+    this.mediaPosFinal = mediaPosFinal;
     this.reprovadoPorFalta = reprovadoPorFalta;
   }
 
@@ -28,24 +28,24 @@ export class Enrollment {
     return [...this.evaluations]; // Return copy to prevent external modification
   }
 
-  // Get media 
-  getMedia(): number{
-    return this.media;
+  // Get media do estudante antes da prova final
+  getMediaPreFinal(): number{
+    return this.mediaPreFinal;
   }
 
-  // Set media 
-  setMedia(media: number){
-    this.media = media;
+  // Set media do estudante antes da prova final
+  setMediaPreFinal(mediaPreFinal: number){
+    this.mediaPreFinal = mediaPreFinal;
   }
 
-  // Get mediaFinal
-  getMediaFinal(): number{
-    return this.mediaFinal;
+  // Get média do estudante depois da final
+  getMediaPosFinal(): number{
+    return this.mediaPosFinal;
   }
 
-  // Set mediaFinal
-  setMediaFinal(mediaFinal: number){
-    this.mediaFinal = mediaFinal;
+  // Set média do estudante depois da final
+  setMediaPosFinal(mediaPosFinal: number){
+    this.mediaPosFinal = mediaPosFinal;
   }
 
   // Get reprovado por falta 
