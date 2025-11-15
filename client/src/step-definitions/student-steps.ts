@@ -1,6 +1,27 @@
-import { Given, When, Then, Before, After, DataTable } from '@cucumber/cucumber';
+import { Given, When, Then, Before, After, DataTable, setDefaultTimeout } from '@cucumber/cucumber';
 import { Browser, Page, launch } from 'puppeteer';
-import { expect } from '@jest/globals';
+
+// Set default timeout for all steps
+setDefaultTimeout(30 * 1000); // 30 seconds
+
+// Simple assertion functions
+function assert(condition: boolean, message?: string) {
+  if (!condition) {
+    throw new Error(message || 'Assertion failed');
+  }
+}
+
+function assertEquals(actual: any, expected: any, message?: string) {
+  if (actual !== expected) {
+    throw new Error(message || `Expected ${expected} but got ${actual}`);
+  }
+}
+
+function assertContains(text: string, substring: string, message?: string) {
+  if (!text.includes(substring)) {
+    throw new Error(message || `Expected "${text}" to contain "${substring}"`);
+  }
+}
 
 let browser: Browser;
 let page: Page;
@@ -40,13 +61,13 @@ Given('the student management system is running', async function () {
   await page.goto(baseUrl);
   await page.waitForSelector('h1', { timeout: 10000 });
   const title = await page.$eval('h1', el => el.textContent);
-  expect(title).toContain('Teaching Assistant React');
+  assertContains(title || '', 'Teaching Assistant React');
 });
 
 Given('the server is available', async function () {
   try {
     const response = await fetch(`${serverUrl}/api/students`);
-    expect(response.status).toBe(200);
+    assertEquals(response.status, 200);
   } catch (error) {
     throw new Error('Server is not available. Make sure the backend server is running on port 3005');
   }
@@ -110,7 +131,7 @@ When('I fill in the student form with:', async function (dataTable: DataTable) {
 When('I submit the student form', async function () {
   // Click the submit button
   const submitButton = await page.$('button[type="submit"]');
-  expect(submitButton).toBeTruthy();
+  assert(!!submitButton, 'Submit button not found');
   
   await submitButton?.click();
   
@@ -137,7 +158,7 @@ Then('I should see {string} in the student list', async function (studentName: s
     }
   }
   
-  expect(studentFound).toBe(true);
+  assert(studentFound, `Student "${studentName}" not found in the student list`);
 });
 
 Then('the student should have CPF {string}', async function (expectedCPF: string) {

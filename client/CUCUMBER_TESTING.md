@@ -140,11 +140,26 @@ Error: Navigation timeout
 ```
 **Solution**: Start the frontend: `npm start` (from client directory)
 
+### TypeScript Compilation Issues
+```
+Error: TS2307: Cannot find module '@jest/globals'
+```
+**Solution**: The setup uses custom assertion functions instead of Jest. No additional Jest installation needed.
+
+### Cucumber Configuration Issues
+```
+Error: You're calling functions on an instance of Cucumber that isn't running
+```
+**Solution**: Ensure setDefaultTimeout is called within step definition files, not in config.
+
 ### Port Conflicts
 **Solution**: Ensure ports 3004 and 3005 are available
 
 ### Browser Issues
 **Solution**: Install latest Chrome/Chromium or run headless mode
+
+### Module Resolution Issues
+**Solution**: Use direct imports instead of relative imports for better compatibility
 
 ## 📈 Adding New Tests
 

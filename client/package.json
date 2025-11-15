@@ -25,8 +25,8 @@
     "start": "PORT=3004 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "test:cucumber": "cucumber-js --config cucumber.js",
-    "test:cucumber:watch": "cucumber-js --config cucumber.js --watch",
+    "test:cucumber": "npx cucumber-js --config cucumber.js",
+    "test:cucumber:watch": "npx cucumber-js --config cucumber.js --watch",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

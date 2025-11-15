@@ -1,11 +1,18 @@
 module.exports = {
-  default: [
-    'src/features/**/*.feature',
-    '--require src/step-definitions/**/*.ts',
-    '--require-module ts-node/register',
-    '--format-options \'{"snippetInterface": "async-await"}\'',
-    '--format progress-bar',
-    '--format json:reports/cucumber_report.json',
-    '--format html:reports/cucumber_report.html'
-  ].join(' ')
+  default: {
+    require: [
+      'ts-node/register',
+      'src/step-definitions/**/*.ts'
+    ],
+    format: [
+      'progress-bar',
+      'json:reports/cucumber_report.json',
+      'html:reports/cucumber_report.html'
+    ],
+    formatOptions: {
+      snippetInterface: 'async-await'
+    },
+    paths: ['src/features/**/*.feature'],
+    requireModule: ['ts-node/register']
+  }
 };
