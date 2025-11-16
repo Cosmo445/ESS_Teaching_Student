@@ -17,6 +17,6 @@ Feature: Student Management
       | email | test.student@email.com   |
     And I submit the student form
     Then I should see "Test Student" in the student list
-    And the student should have CPF "12345678901"
+    And the student should have CPF "123.456.789-01"
     And the student should have email "test.student@email.com"
     And I clean up by removing the test student
