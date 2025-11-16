@@ -9,13 +9,13 @@ Feature: Student Management
 
   Scenario: Add a new student without class association
     Given there is no student with CPF "12345678901" in the system
-    When I navigate to the Students tab
-    And I fill in the student form with:
+    When I navigate to the Students area
+    And I provide the student information:
       | field | value                    |
       | name  | Test Student             |
       | cpf   | 12345678901             |
       | email | test.student@email.com   |
-    And I submit the student form
+    And I send the student information
     Then I should see "Test Student" in the student list
     And the student should have CPF "123.456.789-01"
     And the student should have email "test.student@email.com"

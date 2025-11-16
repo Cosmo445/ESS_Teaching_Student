@@ -78,8 +78,8 @@ Given('there is no student with CPF {string} in the system', async function (cpf
   }
 });
 
-When('I navigate to the Students tab', async function () {
-  // Check if we're already on the students tab
+When('I navigate to the Students area', async function () {
+  // Check if we're already on the students area
   const studentsTab = await page.$('button.tab-button:first-of-type');
   if (studentsTab) {
     const isActive = await page.evaluate(el => el?.classList.contains('active'), studentsTab);
@@ -89,11 +89,11 @@ When('I navigate to the Students tab', async function () {
     }
   }
   
-  // Wait for the student form to be visible
+  // Wait for the student information area to be visible
   await page.waitForSelector('form', { timeout: 5000 });
 });
 
-When('I fill in the student form with:', async function (dataTable: DataTable) {
+When('I provide the student information:', async function (dataTable: DataTable) {
   const data = dataTable.rowsHash();
   
   // Fill in the name field
@@ -110,14 +110,14 @@ When('I fill in the student form with:', async function (dataTable: DataTable) {
   await page.type('input[name="email"]', data.email);
 });
 
-When('I submit the student form', async function () {
-  // Click the submit button
+When('I send the student information', async function () {
+  // Click the submit button to send the information
   const submitButton = await page.$('button[type="submit"]');
   expect(submitButton).toBeTruthy();
   
   await submitButton?.click();
   
-  // Wait for the form to be processed and student to appear
+  // Wait for the information to be processed and student to appear
   await new Promise(resolve => setTimeout(resolve, 2000));
 });
 
