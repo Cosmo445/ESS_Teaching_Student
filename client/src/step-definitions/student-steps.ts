@@ -5,6 +5,15 @@ import expect from 'expect';
 // Set default timeout for all steps
 setDefaultTimeout(30 * 1000); // 30 seconds
 
+// Helper function to format CPF like the frontend does
+function formatCPF(value: string): string {
+  const digits = value.replace(/\D/g, '');
+  if (digits.length <= 11) {
+    return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  }
+  return digits.slice(0, 11).replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
+
 let browser: Browser;
 let page: Page;
 const baseUrl = 'http://localhost:3004';
@@ -23,14 +32,37 @@ Before(async function () {
 });
 
 After(async function () {
-  // Clean up test student if it exists
+  // Clean up test student if it exists by using the GUI delete function
   if (testStudentCPF) {
     try {
-      await fetch(`${serverUrl}/api/students/${testStudentCPF}`, {
-        method: 'DELETE'
-      });
+      // Navigate to Students area
+      await page.goto(baseUrl);
+      await page.waitForSelector('.students-list table', { timeout: 5000 });
+      
+      // Look for our test student in the table and delete it if found
+      const studentRows = await page.$$('tbody tr');
+      for (const row of studentRows) {
+        const cpfCell = await row.$('td:nth-child(2)');
+        if (cpfCell) {
+          const cpf = await page.evaluate(el => el.textContent, cpfCell);
+          // Check for both plain and formatted CPF
+          if (cpf === testStudentCPF || cpf === formatCPF(testStudentCPF)) {
+            // Click the delete button for this student
+            const deleteButton = await row.$('.delete-btn');
+            if (deleteButton) {
+              await deleteButton.click();
+              // Handle the confirmation dialog
+              await new Promise(resolve => setTimeout(resolve, 100)); // Wait for dialog
+              await page.keyboard.press('Enter'); // Confirm deletion
+              await new Promise(resolve => setTimeout(resolve, 500)); // Wait for deletion to complete
+              console.log(`GUI cleanup: Removed test student with CPF: ${cpf}`);
+              break;
+            }
+          }
+        }
+      }
     } catch (error) {
-      console.log('Clean up: Student may not exist or server unavailable');
+      console.log('GUI cleanup: Student may not exist or GUI unavailable');
     }
   }
   
@@ -57,24 +89,48 @@ Given('the server is available', async function () {
 
 Given('there is no student with CPF {string} in the system', async function (cpf: string) {
   testStudentCPF = cpf;
+  const formattedCPF = formatCPF(cpf);
   
-  // Try to delete the student if it exists (cleanup before test)
-  try {
-    await fetch(`${serverUrl}/api/students/${cpf}`, {
-      method: 'DELETE'
-    });
-  } catch (error) {
-    // Student may not exist, which is fine
+  // Navigate to the application and check if student exists through GUI
+  await page.goto(baseUrl);
+  await page.waitForSelector('.students-list', { timeout: 10000 });
+  
+  // Try to find and delete the student if it exists (cleanup before test)
+  const studentRows = await page.$$('tbody tr');
+  for (const row of studentRows) {
+    const cpfCell = await row.$('td:nth-child(2)');
+    if (cpfCell) {
+      const displayedCPF = await page.evaluate(el => el.textContent, cpfCell);
+      // Check for both plain and formatted CPF
+      if (displayedCPF === cpf || displayedCPF === formattedCPF) {
+        // Student exists, delete it for clean test state
+        const deleteButton = await row.$('.delete-btn');
+        if (deleteButton) {
+          await deleteButton.click();
+          // Handle the confirmation dialog
+          await new Promise(resolve => setTimeout(resolve, 100));
+          await page.keyboard.press('Enter'); // Confirm deletion
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for deletion to complete
+          console.log(`GUI cleanup: Removed existing student with CPF: ${displayedCPF}`);
+          break;
+        }
+      }
+    }
   }
   
-  // Verify student doesn't exist
-  try {
-    const response = await fetch(`${serverUrl}/api/students/${cpf}`);
-    if (response.status === 200) {
-      throw new Error(`Student with CPF ${cpf} already exists in the system`);
+  // Verify student doesn't exist by checking the GUI
+  await page.reload(); // Refresh to ensure clean state
+  await page.waitForSelector('.students-list', { timeout: 5000 });
+  
+  const updatedRows = await page.$$('tbody tr');
+  for (const row of updatedRows) {
+    const cpfCell = await row.$('td:nth-child(2)');
+    if (cpfCell) {
+      const displayedCPF = await page.evaluate(el => el.textContent, cpfCell);
+      if (displayedCPF === cpf || displayedCPF === formattedCPF) {
+        throw new Error(`Student with CPF ${displayedCPF} still exists in the system after cleanup`);
+      }
     }
-  } catch (error) {
-    // Expected - student should not exist
   }
 });
 
