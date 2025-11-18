@@ -4,15 +4,6 @@ import expect from 'expect';
 // Set default timeout for all steps
 setDefaultTimeout(30 * 1000); // 30 seconds
 
-// Helper function to format CPF like the frontend does
-function formatCPF(value: string): string {
-  const digits = value.replace(/\D/g, '');
-  if (digits.length <= 11) {
-    return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-  }
-  return digits.slice(0, 11).replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-}
-
 const serverUrl = 'http://localhost:3005';
 
 // Test data to clean up
@@ -24,12 +15,11 @@ After({ tags: '@server' }, async function () {
   // Clean up test student if it exists
   if (testStudentCPF) {
     try {
-      // Try both formatted and unformatted CPF for cleanup
-      const formattedCPF = formatCPF(testStudentCPF);
-      await fetch(`${serverUrl}/api/students/${formattedCPF}`, {
+      // testStudentCPF is already formatted, use it directly
+      await fetch(`${serverUrl}/api/students/${testStudentCPF}`, {
         method: 'DELETE'
       });
-      console.log(`Server cleanup: Removed test student with CPF: ${formattedCPF}`);
+      console.log(`Server cleanup: Removed test student with CPF: ${testStudentCPF}`);
     } catch (error) {
       console.log('Server cleanup: Student may not exist or server unavailable');
     }
@@ -48,27 +38,26 @@ Given('the server API is available', async function () {
 
 Given('there is no student with CPF {string} in the server', async function (cpf: string) {
   testStudentCPF = cpf;
-  const formattedCPF = formatCPF(cpf);
   
   // Try to delete the student if it exists (cleanup before test)
   try {
-    await fetch(`${serverUrl}/api/students/${formattedCPF}`, {
+    await fetch(`${serverUrl}/api/students/${cpf}`, {
       method: 'DELETE'
     });
-    console.log(`Server setup: Removed any existing student with CPF: ${formattedCPF}`);
+    console.log(`Server setup: Removed any existing student with CPF: ${cpf}`);
   } catch (error) {
     // Student may not exist, which is fine
   }
   
   // Verify student doesn't exist
   try {
-    const response = await fetch(`${serverUrl}/api/students/${formattedCPF}`);
+    const response = await fetch(`${serverUrl}/api/students/${cpf}`);
     if (response.status === 200) {
-      throw new Error(`Student with CPF ${formattedCPF} already exists in the system`);
+      throw new Error(`Student with CPF ${cpf} already exists in the system`);
     }
   } catch (error) {
     // Expected - student should not exist (404 or network error)
-    console.log(`Server setup: Confirmed student with CPF ${formattedCPF} does not exist`);
+    console.log(`Server setup: Confirmed student with CPF ${cpf} does not exist`);
   }
 });
 
