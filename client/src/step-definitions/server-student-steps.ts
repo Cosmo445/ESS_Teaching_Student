@@ -72,7 +72,7 @@ Given('there is no student with CPF {string} in the server', async function (cpf
   }
 });
 
-When('I send a POST request to create student with:', async function (dataTable: DataTable) {
+When('I submit a request to create student with:', async function (dataTable: DataTable) {
   const data = dataTable.rowsHash();
   
   const requestBody = {
@@ -96,9 +96,9 @@ When('I send a POST request to create student with:', async function (dataTable:
   }
 });
 
-Then('the server should respond with status {int}', async function (expectedStatus: number) {
-  expect(lastResponse.status).toBe(expectedStatus);
-  console.log(`Server test: Received expected status ${expectedStatus}`);
+Then('the request should be accepted successfully', async function () {
+  expect(lastResponse.status).toBe(201);
+  console.log(`Server test: Request was accepted successfully`);
 });
 
 Then('the server should have stored the student with:', async function (dataTable: DataTable) {
