@@ -40,9 +40,9 @@ After(async function () {
       await page.waitForSelector('.students-list table', { timeout: 5000 });
       
       // Look for our test student in the table and delete it if found
-      const studentRows = await page.$$('tbody tr');
+      const studentRows = await page.$$('[data-testid^="student-row-"]');
       for (const row of studentRows) {
-        const cpfCell = await row.$('td:nth-child(2)');
+        const cpfCell = await row.$('[data-testid="student-cpf"]');
         if (cpfCell) {
           const cpf = await page.evaluate(el => el.textContent, cpfCell);
           // Check for both plain and formatted CPF
@@ -54,7 +54,7 @@ After(async function () {
             });
             
             // Click the delete button for this student
-            const deleteButton = await row.$('.delete-btn');
+            const deleteButton = await row.$(`[data-testid="delete-student-${cpf}"]`);
             if (deleteButton) {
               await deleteButton.click();
               // Wait for deletion to complete
@@ -100,9 +100,9 @@ Given('there is no student with CPF {string} in the system', async function (cpf
   await page.waitForSelector('.students-list', { timeout: 10000 });
   
   // Try to find and delete the student if it exists (cleanup before test)
-  const studentRows = await page.$$('tbody tr');
+  const studentRows = await page.$$('[data-testid^="student-row-"]');
   for (const row of studentRows) {
-    const cpfCell = await row.$('td:nth-child(2)');
+    const cpfCell = await row.$('[data-testid="student-cpf"]');
     if (cpfCell) {
       const displayedCPF = await page.evaluate(el => el.textContent, cpfCell);
       // Check for both plain and formatted CPF
@@ -114,7 +114,7 @@ Given('there is no student with CPF {string} in the system', async function (cpf
           await dialog.accept(); // Confirm deletion
         });
         
-        const deleteButton = await row.$('.delete-btn');
+        const deleteButton = await row.$(`[data-testid="delete-student-${displayedCPF}"]`);
         if (deleteButton) {
           await deleteButton.click();
           // Wait for deletion to complete
@@ -130,9 +130,9 @@ Given('there is no student with CPF {string} in the system', async function (cpf
   await page.reload(); // Refresh to ensure clean state
   await page.waitForSelector('.students-list', { timeout: 5000 });
   
-  const updatedRows = await page.$$('tbody tr');
+  const updatedRows = await page.$$('[data-testid^="student-row-"]');
   for (const row of updatedRows) {
-    const cpfCell = await row.$('td:nth-child(2)');
+    const cpfCell = await row.$('[data-testid="student-cpf"]');
     if (cpfCell) {
       const displayedCPF = await page.evaluate(el => el.textContent, cpfCell);
       if (displayedCPF === cpf || displayedCPF === formattedCPF) {
@@ -143,8 +143,8 @@ Given('there is no student with CPF {string} in the system', async function (cpf
 });
 
 When('I navigate to the Students area', async function () {
-  // Check if we're already on the students area
-  const studentsTab = await page.$('button.tab-button:first-of-type');
+  // Click on the Students tab
+  const studentsTab = await page.$('[data-testid="students-tab"]');
   if (studentsTab) {
     const isActive = await page.evaluate(el => el?.classList.contains('active'), studentsTab);
     
@@ -153,30 +153,30 @@ When('I navigate to the Students area', async function () {
     }
   }
   
-  // Wait for the student information area to be visible
-  await page.waitForSelector('form', { timeout: 5000 });
+  // Wait for the student form to be visible
+  await page.waitForSelector('[data-testid="student-form"]', { timeout: 5000 });
 });
 
 When('I provide the student information:', async function (dataTable: DataTable) {
   const data = dataTable.rowsHash();
   
-  // Fill in the name field
-  await page.waitForSelector('input[name="name"]');
-  await page.click('input[name="name"]');
-  await page.type('input[name="name"]', data.name);
+  // Fill in the name field using semantic ID
+  await page.waitForSelector('#name');
+  await page.click('#name');
+  await page.type('#name', data.name);
   
-  // Fill in the CPF field
-  await page.click('input[name="cpf"]');
-  await page.type('input[name="cpf"]', data.cpf);
+  // Fill in the CPF field using semantic ID
+  await page.click('#cpf');
+  await page.type('#cpf', data.cpf);
   
-  // Fill in the email field
-  await page.click('input[name="email"]');
-  await page.type('input[name="email"]', data.email);
+  // Fill in the email field using semantic ID
+  await page.click('#email');
+  await page.type('#email', data.email);
 });
 
 When('I send the student information', async function () {
-  // Click the submit button to send the information
-  const submitButton = await page.$('button[type="submit"]');
+  // Click the submit button using semantic test ID
+  const submitButton = await page.$('[data-testid="submit-student-button"]');
   expect(submitButton).toBeTruthy();
   
   await submitButton?.click();
@@ -189,12 +189,12 @@ Then('I should see {string} in the student list', async function (studentName: s
   // Wait for the student list to update
   await page.waitForSelector('.students-list table', { timeout: 10000 });
   
-  // Check if the student appears in the table
-  const studentRows = await page.$$('tbody tr');
+  // Check if the student appears in the table using semantic selectors
+  const studentRows = await page.$$('[data-testid^="student-row-"]');
   let studentFound = false;
   
   for (const row of studentRows) {
-    const nameCell = await row.$('td:first-child');
+    const nameCell = await row.$('[data-testid="student-name"]');
     if (nameCell) {
       const name = await page.evaluate(el => el.textContent, nameCell);
       if (name === studentName) {
@@ -208,11 +208,11 @@ Then('I should see {string} in the student list', async function (studentName: s
 });
 
 Then('the student should have CPF {string}', async function (expectedCPF: string) {
-  // Find the row containing our test student and verify CPF
-  const studentRows = await page.$$('tbody tr');
+  // Find the row containing our test student and verify CPF using semantic selectors
+  const studentRows = await page.$$('[data-testid^="student-row-"]');
   
   for (const row of studentRows) {
-    const cpfCell = await row.$('td:nth-child(2)');
+    const cpfCell = await row.$('[data-testid="student-cpf"]');
     if (cpfCell) {
       const cpf = await page.evaluate(el => el.textContent, cpfCell);
       if (cpf === expectedCPF) {
@@ -225,11 +225,11 @@ Then('the student should have CPF {string}', async function (expectedCPF: string
 });
 
 Then('the student should have email {string}', async function (expectedEmail: string) {
-  // Find the row containing our test student and verify email
-  const studentRows = await page.$$('tbody tr');
+  // Find the row containing our test student and verify email using semantic selectors
+  const studentRows = await page.$$('[data-testid^="student-row-"]');
   
   for (const row of studentRows) {
-    const emailCell = await row.$('td:nth-child(3)');
+    const emailCell = await row.$('[data-testid="student-email"]');
     if (emailCell) {
       const email = await page.evaluate(el => el.textContent, emailCell);
       if (email === expectedEmail) {
