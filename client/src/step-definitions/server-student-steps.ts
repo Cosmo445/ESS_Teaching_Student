@@ -117,22 +117,3 @@ Then('the server should have stored the student with:', async function (dataTabl
   
   console.log(`Server test: Verified student stored correctly:`, storedStudent);
 });
-
-Then('I clean up the test student from the server', async function () {
-  if (testStudentCPF) {
-    try {
-      const formattedCPF = formatCPF(testStudentCPF);
-      const response = await fetch(`${serverUrl}/api/students/${formattedCPF}`, {
-        method: 'DELETE'
-      });
-      
-      if (response.ok) {
-        console.log(`Server cleanup: Successfully removed test student with CPF: ${formattedCPF}`);
-      } else {
-        console.log(`Server cleanup: Failed to remove test student, status: ${response.status}`);
-      }
-    } catch (error) {
-      console.log(`Server cleanup: Error removing test student: ${error}`);
-    }
-  }
-});

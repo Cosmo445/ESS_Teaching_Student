@@ -20,4 +20,3 @@ Feature: Server Student Management
       | name  | API Test Student         |
       | cpf   | 987.654.321-00          |
       | email | api.test@email.com       |
-    And I clean up the test student from the server
