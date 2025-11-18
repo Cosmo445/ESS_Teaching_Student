@@ -189,54 +189,80 @@ Then('I should see {string} in the student list', async function (studentName: s
   // Wait for the student list to update
   await page.waitForSelector('.students-list table', { timeout: 10000 });
   
-  // Check if the student appears in the table using semantic selectors
+  // Find the student row that matches our test student's CPF and verify the name
   const studentRows = await page.$$('[data-testid^="student-row-"]');
-  let studentFound = false;
-  
-  for (const row of studentRows) {
-    const nameCell = await row.$('[data-testid="student-name"]');
-    if (nameCell) {
-      const name = await page.evaluate(el => el.textContent, nameCell);
-      if (name === studentName) {
-        studentFound = true;
-        break;
-      }
-    }
-  }
-  
-  expect(studentFound).toBe(true);
-});
-
-Then('the student should have CPF {string}', async function (expectedCPF: string) {
-  // Find the row containing our test student and verify CPF using semantic selectors
-  const studentRows = await page.$$('[data-testid^="student-row-"]');
+  let foundStudent = null;
   
   for (const row of studentRows) {
     const cpfCell = await row.$('[data-testid="student-cpf"]');
     if (cpfCell) {
       const cpf = await page.evaluate(el => el.textContent, cpfCell);
-      if (cpf === expectedCPF) {
-        return; // CPF found and matches
+      if (cpf === formatCPF(testStudentCPF) || cpf === testStudentCPF) {
+        foundStudent = row;
+        break;
       }
     }
   }
   
-  throw new Error(`Student with CPF ${expectedCPF} not found in the student list`);
+  expect(foundStudent).toBeTruthy();
+  
+  // Verify the name matches exactly for this specific student
+  const nameCell = await foundStudent!.$('[data-testid="student-name"]');
+  const actualName = await page.evaluate(el => el.textContent, nameCell!);
+  expect(actualName).toBe(studentName);
+});
+
+Then('the student should have CPF {string}', async function (expectedCPF: string) {
+  // Wait for the student list to update
+  await page.waitForSelector('.students-list table', { timeout: 10000 });
+  
+  // Find all student information from the current test student
+  const studentRows = await page.$$('[data-testid^="student-row-"]');
+  let foundStudent = null;
+  
+  // First, find the student row that matches our test CPF
+  for (const row of studentRows) {
+    const cpfCell = await row.$('[data-testid="student-cpf"]');
+    if (cpfCell) {
+      const cpf = await page.evaluate(el => el.textContent, cpfCell);
+      if (cpf === expectedCPF || cpf === testStudentCPF || cpf === formatCPF(testStudentCPF)) {
+        foundStudent = row;
+        break;
+      }
+    }
+  }
+  
+  expect(foundStudent).toBeTruthy();
+  
+  // Verify the CPF matches exactly
+  const cpfCell = await foundStudent!.$('[data-testid="student-cpf"]');
+  const actualCPF = await page.evaluate(el => el.textContent, cpfCell!);
+  expect(actualCPF).toBe(expectedCPF);
 });
 
 Then('the student should have email {string}', async function (expectedEmail: string) {
-  // Find the row containing our test student and verify email using semantic selectors
+  // Wait for the student list to update
+  await page.waitForSelector('.students-list table', { timeout: 10000 });
+  
+  // Find the student row that matches our test student's CPF
   const studentRows = await page.$$('[data-testid^="student-row-"]');
+  let foundStudent = null;
   
   for (const row of studentRows) {
-    const emailCell = await row.$('[data-testid="student-email"]');
-    if (emailCell) {
-      const email = await page.evaluate(el => el.textContent, emailCell);
-      if (email === expectedEmail) {
-        return; // Email found and matches
+    const cpfCell = await row.$('[data-testid="student-cpf"]');
+    if (cpfCell) {
+      const cpf = await page.evaluate(el => el.textContent, cpfCell);
+      if (cpf === formatCPF(testStudentCPF) || cpf === testStudentCPF) {
+        foundStudent = row;
+        break;
       }
     }
   }
   
-  throw new Error(`Student with email ${expectedEmail} not found in the student list`);
+  expect(foundStudent).toBeTruthy();
+  
+  // Verify the email matches exactly for this specific student
+  const emailCell = await foundStudent!.$('[data-testid="student-email"]');
+  const actualEmail = await page.evaluate(el => el.textContent, emailCell!);
+  expect(actualEmail).toBe(expectedEmail);
 });
