@@ -47,14 +47,18 @@ After(async function () {
           const cpf = await page.evaluate(el => el.textContent, cpfCell);
           // Check for both plain and formatted CPF
           if (cpf === testStudentCPF || cpf === formatCPF(testStudentCPF)) {
+            // Set up dialog handler before clicking delete
+            page.once('dialog', async (dialog) => {
+              console.log(`GUI cleanup: Confirming deletion dialog: ${dialog.message()}`);
+              await dialog.accept(); // Confirm deletion
+            });
+            
             // Click the delete button for this student
             const deleteButton = await row.$('.delete-btn');
             if (deleteButton) {
               await deleteButton.click();
-              // Handle the confirmation dialog
-              await new Promise(resolve => setTimeout(resolve, 100)); // Wait for dialog
-              await page.keyboard.press('Enter'); // Confirm deletion
-              await new Promise(resolve => setTimeout(resolve, 500)); // Wait for deletion to complete
+              // Wait for deletion to complete
+              await new Promise(resolve => setTimeout(resolve, 1000));
               console.log(`GUI cleanup: Removed test student with CPF: ${cpf}`);
               break;
             }
@@ -104,13 +108,17 @@ Given('there is no student with CPF {string} in the system', async function (cpf
       // Check for both plain and formatted CPF
       if (displayedCPF === cpf || displayedCPF === formattedCPF) {
         // Student exists, delete it for clean test state
+        // Set up dialog handler before clicking delete
+        page.once('dialog', async (dialog) => {
+          console.log(`GUI cleanup: Confirming deletion dialog: ${dialog.message()}`);
+          await dialog.accept(); // Confirm deletion
+        });
+        
         const deleteButton = await row.$('.delete-btn');
         if (deleteButton) {
           await deleteButton.click();
-          // Handle the confirmation dialog
-          await new Promise(resolve => setTimeout(resolve, 100));
-          await page.keyboard.press('Enter'); // Confirm deletion
-          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for deletion to complete
+          // Wait for deletion to complete
+          await new Promise(resolve => setTimeout(resolve, 1000));
           console.log(`GUI cleanup: Removed existing student with CPF: ${displayedCPF}`);
           break;
         }
