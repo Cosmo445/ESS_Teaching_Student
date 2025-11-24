@@ -1,75 +1,26 @@
 import request from 'supertest';
-import express from 'express';
-import cors from 'cors';
-import { StudentSet } from '../models/StudentSet';
-import { Student } from '../models/Student';
-import fs from 'fs';
-import path from 'path';
-
-// Mock fs to avoid file operations during tests
-jest.mock('fs');
-const mockedFs = fs as jest.Mocked<typeof fs>;
+import { app, studentSet, classes } from '../server';
 
 describe('Server API - Student Endpoints', () => {
-  let app: express.Application;
-  let studentSet: StudentSet;
-  
-  // Setup test server before each test
+  // Clean up data before each test to ensure isolation
   beforeEach(() => {
-    // Reset all mocks
-    jest.clearAllMocks();
-    
-    // Mock file system operations
-    mockedFs.existsSync.mockReturnValue(false);
-    mockedFs.readFileSync.mockReturnValue('{"students": [], "classes": []}');
-    mockedFs.writeFileSync.mockImplementation(() => {});
-    mockedFs.mkdirSync.mockImplementation(() => '');
-
-    // Create fresh Express app with same setup as server
-    app = express();
-    app.use(cors());
-    app.use(express.json());
-    
-    // Create fresh student set
-    studentSet = new StudentSet();
-    
-    // Add student endpoints (extracted from server.ts)
-    app.post('/api/students', (req, res) => {
+    // Clear all students and classes for clean test state
+    const allStudents = studentSet.getAllStudents();
+    allStudents.forEach(student => {
       try {
-        const { name, cpf, email } = req.body;
-        
-        if (!name || !cpf || !email) {
-          return res.status(400).json({ error: 'Name, CPF, and email are required' });
-        }
-
-        const student = new Student(name, cpf, email);
-        const addedStudent = studentSet.addStudent(student);
-        res.status(201).json(addedStudent.toJSON());
+        studentSet.removeStudent(student.getCPF());
       } catch (error) {
-        res.status(400).json({ error: (error as Error).message });
+        // Student might not exist, which is fine for cleanup
       }
     });
 
-    app.put('/api/students/:cpf', (req, res) => {
+    const allClasses = classes.getAllClasses();
+    allClasses.forEach(classObj => {
       try {
-        const { cpf } = req.params;
-        const { name, email } = req.body;
-        
-        if (!name || !email) {
-          return res.status(400).json({ error: 'Name and email are required for update' });
-        }
-        
-        const updatedStudent = new Student(name, cpf, email);
-        const result = studentSet.updateStudent(updatedStudent);
-        res.json(result.toJSON());
+        classes.removeClass(classObj.getClassId());
       } catch (error) {
-        res.status(400).json({ error: (error as Error).message });
+        // Class might not exist, which is fine for cleanup
       }
-    });
-
-    app.get('/api/students', (req, res) => {
-      const students = studentSet.getAllStudents().map(student => student.toJSON());
-      res.json(students);
     });
   });
 

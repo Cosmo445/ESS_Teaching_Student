@@ -9,8 +9,10 @@
   "collectCoverageFrom": [
     "src/**/*.ts",
     "!src/**/*.d.ts",
-    "!src/server.ts"
+    "!src/server.ts",
+    "!src/index.ts"
   ],
   "coverageDirectory": "coverage",
-  "coverageReporters": ["text", "lcov", "html"]
+  "coverageReporters": ["text", "lcov", "html"],
+  "setupFilesAfterEnv": ["<rootDir>/src/__tests__/setup.ts"]
 }
