@@ -7,4 +7,7 @@ client/reports/
 cucumber-report.*
 
 # jest coverage directory
-coverage/a.csv
+coverage/
+
+# multer folder
+tmp_data/a.csv
