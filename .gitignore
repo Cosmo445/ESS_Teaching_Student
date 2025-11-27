@@ -10,6 +10,6 @@ cucumber-report.*
 coverage/
 
 # multer folder
-tmp_data/a.csv
+tmp_data/
 
 a.csv
