@@ -16,7 +16,12 @@
     "lint": "npm run lint --prefix client"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "cucumber-html-reporter": "^6.0.0",
+    "cucumber-pretty": "^6.0.1",
+    "cypress": "^15.7.0",
+    "cypress-cucumber-preprocessor": "^4.3.1",
+    "cypress-xpath": "^2.0.1"
   },
   "keywords": [
     "react",
@@ -31,5 +36,9 @@
   "workspaces": [
     "client",
     "server"
-  ]
+  ],
+  "dependencies": {
+    "react-scripts": "0.0.0",
+    "xvfb": "^0.4.0"
+  }
 }
