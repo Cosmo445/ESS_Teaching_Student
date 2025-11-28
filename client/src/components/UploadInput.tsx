@@ -7,12 +7,12 @@ interface UploadInputProps {
 }
 
 const UploadInput: React.FC<UploadInputProps> = ({
-  label = "Selecione um arquivo",
+  label = "Upload student data (CSV or XLSX)",
   onFileSelected,
   accept = ".csv, .xlsx"
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [fileName, setFileName] = useState<string>("Nenhum arquivo selecionado");
+  const [fileName, setFileName] = useState<string>("No selected file");
 
   const handleClick = () => {
     inputRef.current?.click();
@@ -27,11 +27,11 @@ const UploadInput: React.FC<UploadInputProps> = ({
   };
 
   return (
-    <div style={styles.container}>
-      <p style={styles.label}>{label}</p>
+    <div className="student-form">
+      <h2 style={styles.label}>{label}</h2>
 
       <button type="button" onClick={handleClick} style={styles.button}>
-        Escolher arquivo
+        Select file
       </button>
 
       <input
@@ -42,7 +42,7 @@ const UploadInput: React.FC<UploadInputProps> = ({
         onChange={handleFileChange}
       />
 
-      <p style={styles.fileName}>{fileName}</p>
+      <p style={styles.fileName}>file: {fileName}</p>
     </div>
   );
 };
@@ -66,10 +66,11 @@ const styles: Record<string, React.CSSProperties> = {
     color: "white",
     cursor: "pointer",
     border: "none",
-    fontSize: "14px"
+    fontSize: "24px",
   },
   fileName: {
     fontSize: "14px",
-    color: "#555"
+    color: "#555",
+    padding: "10px"
   }
 };

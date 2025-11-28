@@ -28,7 +28,9 @@ export function lerPlanilha(arquivo: File): Promise<Student[]> {
       const alunos = linhas.map(l => {
         const [nome, cpf, email] = l.split(",");
         return { name:nome, cpf:cpf, email:email };
-      });
+      }).slice(1); // Skip header line
+
+      console.log(alunos);
 
       resolve(alunos);
     };
