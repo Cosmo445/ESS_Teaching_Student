@@ -1,5 +1,11 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
     "target": "es5",
     "lib": [
       "dom",
@@ -22,5 +28,5 @@
   },
   "include": [
     "src"
-  ]
+, "src/components/analysisModal", "src/components/Evaluations.tsx", "src/components/StudentForm.tsx", "src/components/StudentList.tsx", "src/components/Classes.tsx"  ]
 }

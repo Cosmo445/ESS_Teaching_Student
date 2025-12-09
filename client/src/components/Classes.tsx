@@ -4,6 +4,8 @@ import { Student } from '../types/Student';
 import ClassService from '../services/ClassService';
 import { studentService } from '../services/StudentService';
 import EnrollmentService from '../services/EnrollmentService';
+import { ChevronRight } from 'lucide-react';
+import AnalysisPanel from './analysisModal/analysisPanel';
 
 interface ClassesProps {
   classes: Class[];
@@ -32,6 +34,8 @@ const Classes: React.FC<ClassesProps> = ({
   // Student enrollment state
   const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [enrollmentPanelClass, setEnrollmentPanelClass] = useState<Class | null>(null);
+  const [classListPanelClass, setClassListPanelClass] = useState<Class[] | null>(null);
+  const [analyseClassPanel, setAnalyseClassPanel] = useState<string>("");
   const [selectedStudentsForEnrollment, setSelectedStudentsForEnrollment] = useState<Set<string>>(new Set());
   const [isEnrolling, setIsEnrolling] = useState(false);
 
@@ -79,6 +83,24 @@ const Classes: React.FC<ClassesProps> = ({
     } finally {
       setIsEnrolling(false);
     }
+  };
+
+  //handle opening class analysis panel for a class
+  const handleOpenClassListPanel = (classObj: Class[]) => {
+    setClassListPanelClass(classes);
+  };
+
+  const handleCloseClassListPanel = () => {
+    setClassListPanelClass(null);
+  }
+
+  const handleOpenAnalysisPanel = (classTopic: string) => {
+    setClassListPanelClass(null);
+    setAnalyseClassPanel(classTopic);
+  };
+
+  const handleCloseAnalysisPanel = () => {
+    setAnalyseClassPanel("");
   };
 
   // Handle opening enrollment panel for a specific class
@@ -203,6 +225,19 @@ const Classes: React.FC<ClassesProps> = ({
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 10 }, (_, i) => currentYear - 5 + i);
 
+  // Filter classes to get unique topics
+  const getUniqueTopics = useCallback(() => {
+    const uniqueTopicsMap = new Map<string, Class>();
+    classes.forEach(classObj => {
+      if (classObj.topic && !uniqueTopicsMap.has(classObj.topic)) {
+        uniqueTopicsMap.set(classObj.topic, classObj);
+      }
+    });
+    return Array.from(uniqueTopicsMap.values());
+  }, [classes]);
+
+  const filteredClassesbyTopic = getUniqueTopics();
+
   return (
     <div className="classes-container">
       <h2>Class Management</h2>
@@ -271,11 +306,24 @@ const Classes: React.FC<ClassesProps> = ({
       </div>
 
       {/* Classes List */}
-        <div className='mt-4 bg-blue-100 flex justify-center items-center'>
-          pedro
+      <div className="classes-list">
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '16px',
+          flexDirection: 'row'
+        }}>
+          <h3>Existing Classes ({classes.length})</h3>
+          <button
+            className="enroll-btn"
+            onClick={() => handleOpenClassListPanel(classes)}
+            title="Analyze Classes"
+          >
+            Analyze Classes
+          </button>
         </div>
-      <div className={{"classes-list" + " bg-red-100"}}>
-        <h3>Existing Classes ({classes.length})</h3>
+
 
         {classes.length === 0 ? (
           <div className="no-classes">
@@ -436,6 +484,62 @@ const Classes: React.FC<ClassesProps> = ({
           </div>
         </div>
       )}
+
+      {classListPanelClass && (
+        <div className='enrollment-overlay'>
+          <div className='enrollment-modal'>
+            <div className='enrollment-modal-header'>
+              <h3>Analyse Classes</h3>
+              <button
+                className="close-modal-btn"
+                onClick={handleCloseClassListPanel}
+                title="Close"
+              >
+                ×
+              </button>
+            </div>
+            <div className='enrollment-modal-content'>
+              {/* Analysis Content Here */}
+              <div className='available'>
+                <h4>Escolha uma turma:</h4>
+                {filteredClassesbyTopic.length === 0 ? (
+                  <div className="no-classes">
+                    Nenhuma turma criada ainda. Adicione sua primeira turma usando o formulário acima.
+                  </div>
+                ) : (
+                  <div className="topics-container">
+                    {filteredClassesbyTopic.map((classObj) => (
+                      <div
+                        key={getClassId(classObj)}
+                        className="topic-item"
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '12px 16px',
+                          border: '1px solid #ddd',
+                          borderRadius: '4px',
+                          marginBottom: '8px',
+                          marginTop: '8px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <strong>{classObj.topic}</strong>
+                        <button
+                          onClick={() => handleOpenAnalysisPanel(classObj.topic)}
+                        >
+                          <ChevronRight />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+        <AnalysisPanel classTopic={analyseClassPanel} onClose={handleCloseAnalysisPanel} />
     </div>
   );
 };
