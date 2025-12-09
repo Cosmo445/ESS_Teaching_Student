@@ -30,9 +30,11 @@ const UploadInput: React.FC<UploadInputProps> = ({
     <div className="student-form">
       <h2 style={styles.label}>{label}</h2>
 
-      <button type="button" onClick={handleClick} style={styles.button}>
-        Select file
-      </button>
+      <div className="form-buttons">
+        <button type="submit" disabled={false} onClick={handleClick}>
+          {'Select file'}
+        </button>
+      </div>
 
       <input
         ref={inputRef}
