@@ -16,7 +16,10 @@ let page: Page;
 const baseUrl = 'http://localhost:3004';
 const serverUrl = 'http://localhost:3005';
 
-Before({ tags: '@gui-sumary' }, async function () {
+// Armazenar CPFs dos estudantes criados durante o teste
+const createdStudentCPFs: string[] = [];
+
+Before({ tags: '@gui' }, async function () {
   // Verificar se o servidor está disponível antes de iniciar os testes de GUI
   try {
     const response = await fetch(`${serverUrl}/api/students`);
@@ -27,6 +30,9 @@ Before({ tags: '@gui-sumary' }, async function () {
     throw new Error('Backend server must be running on port 3005 before running GUI tests');
   }
 
+  // Limpar array de CPFs criados
+  createdStudentCPFs.length = 0;
+
   browser = await launch({ 
     headless: false, // Set to true for CI/CD
     slowMo: 50 // Slow down actions for visibility
@@ -35,10 +41,42 @@ Before({ tags: '@gui-sumary' }, async function () {
   await page.setViewport({ width: 1280, height: 720 });
 });
 
-After({ tags: '@gui-sumary' }, async function () {
+After({ tags: '@gui' }, async function () {
+  // Limpar estudantes criados durante o teste
+  console.log('🧹 Limpando dados de teste...');
+  
+  for (const cpf of createdStudentCPFs) {
+    try {
+      const response = await fetch(`${serverUrl}/api/students/${cpf}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        console.log(`✅ Estudante com CPF ${cpf} removido`);
+      }
+    } catch (error) {
+      console.warn(`⚠️ Erro ao remover estudante ${cpf}:`, error);
+    }
+  }
+  
+  // Limpar arquivos temporários criados
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const tempDir = path.resolve(__dirname, '..', '..', '..', 'temp');
+  
+  if (fs.existsSync(tempDir)) {
+    try {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+      console.log('✅ Diretório temporário removido');
+    } catch (error) {
+      console.warn('⚠️ Erro ao remover diretório temporário:', error);
+    }
+  }
+  
   if (browser) {
     await browser.close();
   }
+  
+  console.log('✅ Limpeza concluída');
 });
 
 Given('que estou na tela {string}', async function (screenName: string) {
@@ -160,6 +198,9 @@ When('seleciono o arquivo {string}', async function (fileName: string) {
     // Criar o arquivo temporário
     fs.writeFileSync(testFilePath, csvContent, 'utf-8');
     console.log(`📄 Arquivo temporário criado: ${testFilePath}`);
+    
+    // Registrar CPFs para limpeza posterior
+    createdStudentCPFs.push('12345678901', '98765432109');
   }
   
   // Fazer upload do arquivo

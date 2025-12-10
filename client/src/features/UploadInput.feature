@@ -1,4 +1,4 @@
-@gui-sumary
+@gui
 Feature: Importar de planilha de alunos
   As a professor
   I want to importar dados dos alunos de um arquivo para o sistema

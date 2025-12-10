@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 
 interface UploadInputProps {
   label?: string;
-  onFileSelected: (file: File) => void;
+  onFileSelected: (file: File) => Promise<any[] | void> | any[] | void;
   accept?: string; // ex: ".csv, application/vnd.ms-excel"
 }
 
@@ -13,17 +13,31 @@ const UploadInput: React.FC<UploadInputProps> = ({
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string>("No selected file");
+  const [successMessage, setSuccessMessage] = useState<string>("");
 
   const handleClick = () => {
     inputRef.current?.click();
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files || event.target.files.length === 0) return;
 
     const file = event.target.files[0];
     setFileName(file.name);
-    onFileSelected(file);
+    setSuccessMessage(""); // Limpar mensagem anterior
+    
+    try {
+      const result = await onFileSelected(file);
+      // Exibir mensagem de sucesso
+      if (result && Array.isArray(result)) {
+        setSuccessMessage(`✅ Importação concluída com sucesso! ${result.length} aluno(s) importado(s).`);
+        // Limpar mensagem após 5 segundos
+        setTimeout(() => setSuccessMessage(""), 5000);
+      }
+    } catch (error) {
+      setSuccessMessage("❌ Erro ao importar arquivo. Verifique o formato e tente novamente.");
+      setTimeout(() => setSuccessMessage(""), 5000);
+    }
   };
 
   return (
@@ -45,6 +59,12 @@ const UploadInput: React.FC<UploadInputProps> = ({
       />
 
       <p style={styles.fileName}>file: {fileName}</p>
+      
+      {successMessage && (
+        <div style={successMessage.includes('✅') ? styles.successMessage : styles.errorMessage}>
+          {successMessage}
+        </div>
+      )}
     </div>
   );
 };
@@ -74,5 +94,25 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: "14px",
     color: "#555",
     padding: "10px"
+  },
+  successMessage: {
+    padding: "12px",
+    borderRadius: "6px",
+    backgroundColor: "#d4edda",
+    color: "#155724",
+    border: "1px solid #c3e6cb",
+    fontSize: "14px",
+    marginTop: "10px",
+    fontWeight: 500
+  },
+  errorMessage: {
+    padding: "12px",
+    borderRadius: "6px",
+    backgroundColor: "#f8d7da",
+    color: "#721c24",
+    border: "1px solid #f5c6cb",
+    fontSize: "14px",
+    marginTop: "10px",
+    fontWeight: 500
   }
 };

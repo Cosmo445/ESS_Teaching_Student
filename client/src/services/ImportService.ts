@@ -20,26 +20,37 @@ export async function statusImportacao(turmaId: string) {
 }
 
 // Função para enviar a planilha para o servidor usando `fetch`
-export const uploadPlanilha = async (newStudents: Student[]) => {
+export const uploadPlanilha = async (newStudents: Student[]): Promise<{ success: boolean; count: number; errors: number }> => {
   
   console.log("Enviando arquivo para o servidor: \n");
   console.log(newStudents);
 
+  let successCount = 0;
+  let errorCount = 0;
+
   for (let i = 0; i < newStudents.length; i++) {
     const st = newStudents[i];
     console.log(st);
-
+    
     try {
-      studentService.createStudent(st);
+      await studentService.createStudent(st);
+      successCount++;
     } catch (error) {
       try {
-        studentService.updateStudent(st.cpf, st);
+        await studentService.updateStudent(st.cpf, st);
+        successCount++;
       } catch (error) {
         console.log('Error importing student "' + st.cpf + '":');
+        errorCount++;
       }
     }
   }
 
+  return {
+    success: errorCount === 0,
+    count: successCount,
+    errors: errorCount
+  };
 };
 
 
@@ -47,18 +58,27 @@ export function upPlanilha(arquivo: File): Promise<Student[]> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
-    reader.onload = (e) => {
-      const texto = e.target?.result as string;
-      const linhas = texto.split("\n");
+    reader.onload = async (e) => {
+      try {
+        const texto = e.target?.result as string;
+        const linhas = texto.split("\n");
 
-      const alunos = linhas.map(l => {
-        const [nome, cpf, email] = l.split(",");
-        return { name:nome, cpf:cpf, email:email };
-      }).slice(1); // Skip header line
+        const alunos = linhas.map(l => {
+          const [nome, cpf, email] = l.split(",");
+          return { name:nome, cpf:cpf, email:email };
+        }).slice(1); // Skip header line
 
-      uploadPlanilha(alunos);
-
-      resolve(alunos);
+        const result = await uploadPlanilha(alunos);
+        
+        if (result.success || result.count > 0) {
+          console.log(`✅ Importação concluída: ${result.count} aluno(s) importado(s), ${result.errors} erro(s)`);
+          resolve(alunos);
+        } else {
+          reject(new Error(`Falha na importação: ${result.errors} erro(s)`));
+        }
+      } catch (error) {
+        reject(error);
+      }
     };
 
     reader.onerror = reject;
