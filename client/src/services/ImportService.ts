@@ -1,5 +1,6 @@
 
 import { Student } from '../types/Student';
+import { studentService } from './StudentService';
 
 export async function validarPlanilha(turmaId: string, file: File) {
   const formData = new FormData();
@@ -19,29 +20,26 @@ export async function statusImportacao(turmaId: string) {
 }
 
 // Função para enviar a planilha para o servidor usando `fetch`
-export const uploadPlanilha = async (file: File) => {
+export const uploadPlanilha = async (newStudents: Student[]) => {
   
   console.log("Enviando arquivo para o servidor: \n");
-  console.log(file);
-  /*
+  console.log(newStudents);
 
-  if (!file) return;
+  for (let i = 0; i < newStudents.length; i++) {
+    const st = newStudents[i];
+    console.log(st);
 
-  const formData = new FormData();
-  formData.append('file', file);
-  try {
-    const response = await fetch('http://localhost:3005/data/students.json', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error('Erro ao enviar o arquivo');
+    try {
+      studentService.createStudent(st);
+    } catch (error) {
+      try {
+        studentService.updateStudent(st.cpf, st);
+      } catch (error) {
+        console.log('Error importing student "' + st.cpf + '":');
+      }
     }
+  }
 
-  } catch (err) {
-      throw new Error('Erro ao enviar o arquivo');
-  }*/
 };
 
 
@@ -58,17 +56,7 @@ export function upPlanilha(arquivo: File): Promise<Student[]> {
         return { name:nome, cpf:cpf, email:email };
       }).slice(1); // Skip header line
 
-      //console.log(alunos);
-
-      const jsonAlunes = JSON.stringify({"students" : alunos}, null, 2);
-      //console.log(jsonAlunes);
-
-      const blob = new Blob([jsonAlunes], { type: "application/json" });
-      const alunesJsonFile = new File([blob], "students.json", { type: "application/json" });
-
-      //console.log(alunesJsonFile);
-
-      uploadPlanilha(alunesJsonFile);
+      uploadPlanilha(alunos);
 
       resolve(alunos);
     };
