@@ -31,7 +31,7 @@ const UploadInput: React.FC<UploadInputProps> = ({
       <h2 style={styles.label}>{label}</h2>
 
       <div className="form-buttons">
-        <button type="submit" disabled={false} onClick={handleClick}>
+        <button name="Select file" type="submit" disabled={false} onClick={handleClick}>
           {'Select file'}
         </button>
       </div>
