@@ -1,6 +1,5 @@
 // TESTE DE INTEGRAÇÃO DE SERVIÇO (BACKEND)
 // Testa os endpoints de analytics da API
-// caminho real: server/src/__tests__/analytics.test.ts
 
 import request from 'supertest';
 import { app, studentSet, classes } from '../server';
@@ -72,7 +71,7 @@ describe("Server API - Analytics Endpoints", () => {
       expect(response.body[0].enrollments).toHaveLength(2);
     });
 
-    it("deve filtrar turmas por disciplina quando query parameter é fornecido", async () => {
+    it("deve filtrar turmas por disciplina usando endpoint específico", async () => {
       // Criar turmas de diferentes disciplinas
       const classESS = new Class('Engenharia de Software', 1, 2023);
       const classMD = new Class('Matemática Discreta', 1, 2023);
@@ -81,8 +80,7 @@ describe("Server API - Analytics Endpoints", () => {
       classes.addClass(classMD);
 
       const response = await request(app)
-        .get('/api/classes')
-        .query({ discipline: 'Engenharia de Software' })
+        .get('/api/classes/Engenharia de Software')
         .expect(200);
 
       expect(response.body).toHaveLength(1);
@@ -95,8 +93,7 @@ describe("Server API - Analytics Endpoints", () => {
       classes.addClass(classESS);
 
       const response = await request(app)
-        .get('/api/classes')
-        .query({ discipline: 'Matemática Discreta' })
+        .get('/api/classes/Matemática Discreta')
         .expect(200);
 
       expect(response.body).toEqual([]);
