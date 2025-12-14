@@ -19,6 +19,21 @@ export async function statusImportacao(turmaId: string) {
     .then(r => r.json());
 }
 
+async function importarOuAtualizarAluno(st: Student): Promise<boolean> {
+  try {
+    await studentService.createStudent(st);
+    return true;
+  } catch {
+    try {
+      await studentService.updateStudent(st.cpf, st);
+      return true;
+    } catch {
+      console.log(`Error importing student "${st.cpf}"`);
+      return false;
+    }
+  }
+}
+
 // Função para enviar a planilha para o servidor usando `fetch`
 export const uploadPlanilha = async (newStudents: Student[]): Promise<{ success: boolean; count: number; errors: number }> => {
   
@@ -29,21 +44,10 @@ export const uploadPlanilha = async (newStudents: Student[]): Promise<{ success:
   let errorCount = 0;
 
   for (let i = 0; i < newStudents.length; i++) {
-    const st = newStudents[i];
-    console.log(st);
-    
-    try {
-      await studentService.createStudent(st);
-      successCount++;
-    } catch (error) {
-      try {
-        await studentService.updateStudent(st.cpf, st);
-        successCount++;
-      } catch (error) {
-        console.log('Error importing student "' + st.cpf + '":');
-        errorCount++;
-      }
-    }
+    const ok = await importarOuAtualizarAluno(newStudents[i]);
+
+    if(ok)  successCount++; 
+    else    errorCount++;
   }
 
   return {
