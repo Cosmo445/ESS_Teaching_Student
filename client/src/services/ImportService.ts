@@ -34,8 +34,7 @@ async function importarOuAtualizarAluno(st: Student): Promise<boolean> {
   }
 }
 
-// Função para enviar a planilha para o servidor usando `fetch`
-export const uploadPlanilha = async (newStudents: Student[]): Promise<{ success: boolean; count: number; errors: number }> => {
+export const tryUploadPlanilha = async (newStudents: Student[]): Promise<{ success: boolean; count: number; errors: number }> => {
   
   console.log("Enviando arquivo para o servidor: \n");
   console.log(newStudents);
@@ -66,7 +65,7 @@ function parseCSV(texto: string): Student[] {
   }).slice(1); // Skip header line
 }
 
-export function upPlanilha(arquivo: File): Promise<Student[]> {
+export function uploadPlanilha(arquivo: File): Promise<Student[]> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -75,7 +74,7 @@ export function upPlanilha(arquivo: File): Promise<Student[]> {
         const texto = e.target?.result as string;
         const alunos = parseCSV(texto);
 
-        const result = await uploadPlanilha(alunos);
+        const result = await tryUploadPlanilha(alunos);
         
         if (result.success || result.count > 0) {
           console.log(`✅ Importação concluída: ${result.count} aluno(s) importado(s), ${result.errors} erro(s)`);

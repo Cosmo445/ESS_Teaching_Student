@@ -8,7 +8,7 @@ import StudentForm from './components/StudentForm';
 import Evaluations from './components/Evaluations';
 import Classes from './components/Classes';
 import './index.css';
-import {upPlanilha} from "../src/services/ImportService";
+import {uploadPlanilha} from "../src/services/ImportService";
 import UploadInput from "../src/components/UploadInput";
 
 type TabType = 'students' | 'evaluations' | 'classes';
@@ -185,7 +185,7 @@ const App: React.FC = () => {
 
               <UploadInput 
                 label="Envie um arquivo CSV ou XLSX"
-                onFileSelected={upPlanilha}
+                onFileSelected={uploadPlanilha}
               />
 
               <StudentForm
