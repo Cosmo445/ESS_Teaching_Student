@@ -57,6 +57,14 @@ export const uploadPlanilha = async (newStudents: Student[]): Promise<{ success:
   };
 };
 
+function parseCSV(texto: string): Student[] {
+  const linhas = texto.split("\n");
+
+  return linhas.map(l => {
+    const [nome, cpf, email] = l.split(",");
+    return { name:nome, cpf:cpf, email:email };
+  }).slice(1); // Skip header line
+}
 
 export function upPlanilha(arquivo: File): Promise<Student[]> {
   return new Promise((resolve, reject) => {
@@ -65,12 +73,7 @@ export function upPlanilha(arquivo: File): Promise<Student[]> {
     reader.onload = async (e) => {
       try {
         const texto = e.target?.result as string;
-        const linhas = texto.split("\n");
-
-        const alunos = linhas.map(l => {
-          const [nome, cpf, email] = l.split(",");
-          return { name:nome, cpf:cpf, email:email };
-        }).slice(1); // Skip header line
+        const alunos = parseCSV(texto);
 
         const result = await uploadPlanilha(alunos);
         
